@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class TextBox extends StatelessWidget {
   final String hint;
   final controller;
+  final initial;
 
   TextBox({
     super.key,
     required this.hint,
     required this.controller,
+    required this.initial,
   });
 
   @override

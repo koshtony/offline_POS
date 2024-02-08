@@ -118,265 +118,291 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
         backgroundColor: const Color(0xFF2A2D3E),
         body: SafeArea(
+            child: SingleChildScrollView(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height -
+                MediaQuery.of(context).padding.top,
             child: Row(
-          children: [
-            Expanded(
-                flex: 5,
-                child: Column(
-                  children: [
-                    Row(children: []),
-                    const SizedBox(height: 16),
-                    GridView.builder(
-                        padding: EdgeInsets.all(16),
-                        itemCount: info.length,
-                        shrinkWrap: true,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 8,
-                        ),
-                        itemBuilder: ((context, index) => Container(
-                              padding: EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                  color: Color(0xFF212332),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(20))),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                            height: 40,
-                                            width: 40,
-                                            decoration: BoxDecoration(
-                                              color: info[index].color,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(20)),
-                                            ),
-                                            child: info[index].icon),
-                                      ]),
-                                  Text(info[index].title,
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      )),
-                                  const SizedBox(height: 20),
-                                  Stack(children: [
-                                    Container(
-                                      width: double.infinity,
-                                      height: 5,
-                                      decoration: BoxDecoration(
-                                          color: info[index]
-                                              .color
-                                              .withOpacity(0.2),
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(16))),
-                                    ),
-                                    LayoutBuilder(
-                                        builder: (context, constraints) =>
-                                            Container(
-                                              width: constraints.maxWidth * 0.6,
-                                              height: 5,
-                                              decoration: BoxDecoration(
-                                                  color: info[index].color,
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(16))),
-                                            ))
-                                  ]),
-                                  const SizedBox(height: 20),
-                                  Row(
+              children: [
+                Flexible(
+                    flex: 5,
+                    child: Column(
+                      children: [
+                        Row(children: []),
+                        const SizedBox(height: 16),
+                        GridView.builder(
+                            padding: EdgeInsets.all(16),
+                            itemCount: info.length,
+                            shrinkWrap: true,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 8,
+                            ),
+                            itemBuilder: ((context, index) => Container(
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xFF212332),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(20))),
+                                  child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(info[index].value.toString(),
+                                      Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                                height: 40,
+                                                width: 40,
+                                                decoration: BoxDecoration(
+                                                  color: info[index].color,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(20)),
+                                                ),
+                                                child: info[index].icon),
+                                          ]),
+                                      Text(info[index].title,
+                                          maxLines: 1,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 12,
-                                          ))
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ))),
-                    const SizedBox(height: 20),
-                    Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                            color: Color(0xFF212332),
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        child: Column(children: [
-                          Text("Monthly sales",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              )),
-                          FutureBuilder(
-                              future: _sales,
-                              builder: ((context, snapshot) {
-                                print(snapshot.data.runtimeType);
-                                if (snapshot.data == null) {
-                                  const Text("No sales recorded");
-                                } else if (snapshot.hasData) {
-                                  return SizedBox(
-                                    width: double.infinity,
-                                    child: DataTable(
-                                        columns: [
-                                          DataColumn(
-                                              label: Text("id",
-                                                  style: TextStyle(
-                                                      color: Colors.white))),
-                                          DataColumn(
-                                              label: Text("name",
-                                                  style: TextStyle(
-                                                      color: Colors.white))),
-                                          DataColumn(
-                                              label: Text("category",
-                                                  style: TextStyle(
-                                                      color: Colors.white))),
-                                          DataColumn(
-                                              label: Text("price",
-                                                  style: TextStyle(
-                                                      color: Colors.white))),
-                                          DataColumn(
-                                              label: Text("profit",
-                                                  style: TextStyle(
-                                                      color: Colors.white))),
-                                          DataColumn(
-                                              label: Text("Date",
-                                                  style: TextStyle(
-                                                      color: Colors.white)))
+                                          )),
+                                      const SizedBox(height: 20),
+                                      Stack(children: [
+                                        Container(
+                                          width: double.infinity,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                              color: info[index]
+                                                  .color
+                                                  .withOpacity(0.2),
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                      Radius.circular(16))),
+                                        ),
+                                        LayoutBuilder(
+                                            builder: (context, constraints) =>
+                                                Container(
+                                                  width: constraints.maxWidth *
+                                                      0.6,
+                                                  height: 5,
+                                                  decoration: BoxDecoration(
+                                                      color: info[index].color,
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                              Radius.circular(
+                                                                  16))),
+                                                ))
+                                      ]),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(info[index].value.toString(),
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ))
                                         ],
-                                        rows: snapshot.data
-                                            .map<DataRow>((sale) =>
-                                                DataRow(cells: [
-                                                  DataCell(Text(
-                                                      sale["salesId"]
-                                                          .toString(),
-                                                      style: const TextStyle(
+                                      )
+                                    ],
+                                  ),
+                                ))),
+                        const SizedBox(height: 20),
+                        Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: const BoxDecoration(
+                                color: Color(0xFF212332),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20))),
+                            child: Column(children: [
+                              Text("Monthly sales",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  )),
+                              FutureBuilder(
+                                  future: _sales,
+                                  builder: ((context, snapshot) {
+                                    print(snapshot.data.runtimeType);
+                                    if (snapshot.data == null) {
+                                      const Text("No sales recorded");
+                                    } else if (snapshot.hasData) {
+                                      return SizedBox(
+                                        width: double.infinity,
+                                        child: DataTable(
+                                            columns: [
+                                              DataColumn(
+                                                  label: Text("id",
+                                                      style: TextStyle(
                                                           color:
                                                               Colors.white))),
-                                                  DataCell(Text(sale["name"],
-                                                      style: const TextStyle(
+                                              DataColumn(
+                                                  label: Text("name",
+                                                      style: TextStyle(
                                                           color:
                                                               Colors.white))),
-                                                  DataCell(Text(
-                                                      sale["category"]
-                                                          .toString(),
-                                                      style: const TextStyle(
+                                              DataColumn(
+                                                  label: Text("category",
+                                                      style: TextStyle(
                                                           color:
                                                               Colors.white))),
-                                                  DataCell(Text(
-                                                      sale["price"].toString(),
-                                                      style: const TextStyle(
+                                              DataColumn(
+                                                  label: Text("price",
+                                                      style: TextStyle(
                                                           color:
                                                               Colors.white))),
-                                                  DataCell(Text(
-                                                      sale["profit"].toString(),
-                                                      style: const TextStyle(
+                                              DataColumn(
+                                                  label: Text("profit",
+                                                      style: TextStyle(
                                                           color:
                                                               Colors.white))),
-                                                  DataCell(Text(
-                                                      sale["salesDate"]
-                                                          .toString(),
-                                                      style: const TextStyle(
+                                              DataColumn(
+                                                  label: Text("Date",
+                                                      style: TextStyle(
                                                           color: Colors.white)))
-                                                ]))
-                                            .toList()),
-                                  );
-                                }
+                                            ],
+                                            rows: snapshot.data
+                                                .map<DataRow>(
+                                                    (sale) => DataRow(cells: [
+                                                          DataCell(Text(
+                                                              sale["salesId"]
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white))),
+                                                          DataCell(Text(
+                                                              sale["name"],
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white))),
+                                                          DataCell(Text(
+                                                              sale["category"]
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white))),
+                                                          DataCell(Text(
+                                                              sale["price"]
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white))),
+                                                          DataCell(Text(
+                                                              sale["profit"]
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white))),
+                                                          DataCell(Text(
+                                                              sale["salesDate"]
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white)))
+                                                        ]))
+                                                .toList()),
+                                      );
+                                    }
 
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Container(
-                                    child: const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        child: const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      ),
+                                    );
+                                  }))
+                            ]))
+                      ],
+                    )),
+                const SizedBox(
+                  width: 40,
+                ),
+                Flexible(
+                    flex: 2,
+                    child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration:
+                            const BoxDecoration(color: Color(0xFF212332)),
+                        child: Column(children: [
+                          const Text(
+                            "Stocks/sales Ratio ",
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(
+                            height: 40,
+                          ),
+                          SizedBox(
+                              height: 200,
+                              child: Stack(children: [
+                                PieChart(PieChartData(sections: [
+                                  PieChartSectionData(
+                                    color: Colors.blue,
+                                    value: 20,
+                                    title: "sales",
+                                    showTitle: true,
+                                    radius: 15,
                                   ),
-                                );
-                              }))
-                        ]))
-                  ],
-                )),
-            const SizedBox(
-              width: 40,
+                                  PieChartSectionData(
+                                    color: Colors.orange,
+                                    value: 80,
+                                    title: "stocks",
+                                    showTitle: true,
+                                    radius: 25,
+                                  ),
+                                ])),
+                                Positioned.fill(
+                                    child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                      Text(
+                                        "${80 / 20}%",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16),
+                                      ),
+                                      Text("stocks/sales",
+                                          style: TextStyle(
+                                            fontSize: 8,
+                                            color: Colors.white,
+                                          ))
+                                    ]))
+                              ])),
+                          const SizedBox(height: 20),
+                          Flexible(
+                              child: ListView.builder(
+                                  itemCount: _stocksCat.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      color: Colors.orange,
+                                      child: ListTile(
+                                        leading: const Icon(Icons.category),
+                                        title: Text(_stocksCat[index]
+                                                ["category"]
+                                            .toString()),
+                                        trailing: Text(_stocksCat[index]
+                                                ["sumQty"]
+                                            .toString()),
+                                        selected: true,
+                                      ),
+                                    );
+                                  }))
+                        ])))
+              ],
             ),
-            Expanded(
-                flex: 2,
-                child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(color: Color(0xFF212332)),
-                    child: Column(children: [
-                      const Text(
-                        "Stocks/sales Ratio ",
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(
-                        height: 40,
-                      ),
-                      SizedBox(
-                          height: 200,
-                          child: Stack(children: [
-                            PieChart(PieChartData(sections: [
-                              PieChartSectionData(
-                                color: Colors.blue,
-                                value: 20,
-                                title: "sales",
-                                showTitle: true,
-                                radius: 15,
-                              ),
-                              PieChartSectionData(
-                                color: Colors.orange,
-                                value: 80,
-                                title: "stocks",
-                                showTitle: true,
-                                radius: 25,
-                              ),
-                            ])),
-                            Positioned.fill(
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                  Text(
-                                    "${80 / 20}%",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                  Text("stocks/sales",
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        color: Colors.white,
-                                      ))
-                                ]))
-                          ])),
-                      const SizedBox(height: 20),
-                      Flexible(
-                          child: ListView.builder(
-                              itemCount: _stocksCat.length,
-                              itemBuilder: (context, index) {
-                                return Card(
-                                  color: Colors.orange,
-                                  child: ListTile(
-                                    leading: const Icon(Icons.category),
-                                    title: Text(_stocksCat[index]["category"]
-                                        .toString()),
-                                    trailing: Text(
-                                        _stocksCat[index]["sumQty"].toString()),
-                                    selected: true,
-                                  ),
-                                );
-                              }))
-                    ])))
-          ],
+          ),
         )));
   }
 }

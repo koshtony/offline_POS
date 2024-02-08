@@ -88,15 +88,34 @@ class SQLOps {
   static Future<List<Map<String, dynamic>>> getIndDetail(
       String table, String name) async {
     final db = await SQLOps._db();
-    return db.query(table, where: "name = ?", whereArgs: [name]);
+    return db.query(table, where: "name LIKE ?", whereArgs: ['%$name%']);
   }
 
   static Future<int> updateQty(int id, int qty) async {
     final db = await SQLOps._db();
 
-    final data = {'qty': qty};
+    final newQty = {'qty': qty};
 
-    return db.update('cart', data, where: "salesId=?", whereArgs: [id]);
+    return db.update('cart', newQty, where: "salesId=?", whereArgs: [id]);
+  }
+
+  static Future<int> updateStockQty(int id, int qty) async {
+    final db = await SQLOps._db();
+
+    final newQty = {'qty': qty};
+
+    return db.update("stocks", newQty, where: "id=?", whereArgs: [id]);
+  }
+
+  static Future<int> subtractStock(int id, int qty) async {
+    final db = await SQLOps._db();
+    List<Map> results =
+        await db.rawQuery("SELECT qty FROM stocks where id=?", [id]);
+    int oldQty = results[0]["qty"];
+
+    final newQty = {'qty': oldQty - qty};
+
+    return db.update('stocks', newQty, where: "id=?", whereArgs: [id]);
   }
 
   static Future<void> deleteItem(int id, String table) async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:offline_pos/components/alert_form.dart';
 import 'package:offline_pos/components/textbox.dart';
 import 'package:offline_pos/database/models.dart';
 import 'package:offline_pos/database/operations.dart';
@@ -71,12 +72,13 @@ class _AddStocksPageState extends State<AddStocksPage> {
           ),
         ),
       ),
-      body: Row(
-        children: [
-          Flexible(
-            child: SingleChildScrollView(
-              child: FractionallySizedBox(
-                widthFactor: 0.5,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              Flexible(
+                flex: 1,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -88,49 +90,78 @@ class _AddStocksPageState extends State<AddStocksPage> {
                           children: [
                             TextBox(
                                 hint: "Serial Number",
-                                controller: serialController),
+                                controller: serialController,
+                                initial: ""),
                             const SizedBox(height: 15),
-                            TextBox(hint: "Name", controller: _nameController),
+                            TextBox(
+                              hint: "Name",
+                              controller: _nameController,
+                              initial: "",
+                            ),
                             const SizedBox(height: 15),
                             TextBox(
                                 hint: "Category",
-                                controller: _categoryController),
-                            const SizedBox(height: 15),
-                            TextBox(hint: "Desc", controller: _descController),
-                            const SizedBox(height: 15),
-                            TextBox(hint: "Qty", controller: _qtyController),
-                            const SizedBox(height: 15),
-                            TextBox(hint: "Cost", controller: _costController),
+                                controller: _categoryController,
+                                initial: ""),
                             const SizedBox(height: 15),
                             TextBox(
-                                hint: "Price", controller: _priceController),
+                                hint: "Desc",
+                                controller: _descController,
+                                initial: ""),
                             const SizedBox(height: 15),
-                            TextBox(hint: "Tax", controller: _taxController),
+                            TextBox(
+                              hint: "Qty",
+                              controller: _qtyController,
+                              initial: 1,
+                            ),
                             const SizedBox(height: 15),
-                            ElevatedButton.icon(
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    await saveStocks();
+                            TextBox(
+                              hint: "Cost",
+                              controller: _costController,
+                              initial: 0.0,
+                            ),
+                            const SizedBox(height: 15),
+                            TextBox(
+                              hint: "Price",
+                              controller: _priceController,
+                              initial: 0.0,
+                            ),
+                            const SizedBox(height: 15),
+                            TextBox(
+                                hint: "Tax",
+                                controller: _taxController,
+                                initial: 0.16),
+                            const SizedBox(height: 15),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  ElevatedButton.icon(
+                                      onPressed: () async {
+                                        if (_formKey.currentState!.validate()) {
+                                          await saveStocks();
 
-                                    setState(() {
-                                      _stockList = context
-                                          .read<PosChangeNotifier>()
-                                          .getStocks();
-                                    });
-                                  }
-                                },
-                                icon: const Icon(Icons.save),
-                                label: const Text("save"))
+                                          setState(() {
+                                            _stockList = context
+                                                .read<PosChangeNotifier>()
+                                                .getStocks();
+                                          });
+                                        }
+                                      },
+                                      icon: const Icon(Icons.save),
+                                      label: const Text("save")),
+                                  const SizedBox(width: 20),
+                                  ElevatedButton.icon(
+                                      onPressed: () {},
+                                      icon: const Icon(Icons.update),
+                                      label: const Text("Update"))
+                                ]),
                           ],
                         )),
                   ],
                 ),
               ),
-            ),
-          ),
-          Flexible(
-            child: FractionallySizedBox(
-                widthFactor: 1,
+              Flexible(
+                flex: 2,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -138,7 +169,12 @@ class _AddStocksPageState extends State<AddStocksPage> {
                     TextField(
                       controller: editingController,
                       onChanged: (value) {
-                        filterStockList(value.toString());
+                        if (value == "") {
+                          _stockList =
+                              context.read<PosChangeNotifier>().getStocks();
+                        } else {
+                          filterStockList(value.toString());
+                        }
                       },
                       decoration: InputDecoration(
                           labelText: "Search",
@@ -149,9 +185,10 @@ class _AddStocksPageState extends State<AddStocksPage> {
                                   BorderRadius.all(Radius.circular(25.0)))),
                     ),
                     const SizedBox(height: 40),
-                    Flexible(
-                        child: Consumer<PosChangeNotifier>(
-                      builder: (context, notifier, child) => FutureBuilder(
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height -
+                          MediaQuery.of(context).padding.top,
+                      child: FutureBuilder(
                           future: _stockList,
                           builder: (context, snapshot) {
                             if (snapshot.data == null) {
@@ -258,26 +295,94 @@ class _AddStocksPageState extends State<AddStocksPage> {
                                                 ],
                                               ),
                                             ),
-                                            const SizedBox(width: 40),
+                                            const SizedBox(width: 10),
                                             Expanded(
                                                 child: Wrap(children: [
-                                              ElevatedButton.icon(
-                                                onPressed: () {},
-                                                icon: const Icon(Icons.remove),
-                                                label: const Text(""),
-                                              ),
+                                              IconButton(
+                                                  onPressed: () async {
+                                                    await SQLOps.updateStockQty(
+                                                        snapshot.data[index]
+                                                            ["id"],
+                                                        snapshot.data[index]
+                                                                ["qty"] +
+                                                            1);
+
+                                                    setState(() {
+                                                      _stockList = context
+                                                          .read<
+                                                              PosChangeNotifier>()
+                                                          .getStocks();
+                                                    });
+                                                  },
+                                                  icon: const Icon(Icons.add)),
                                               const SizedBox(
-                                                width: 20,
+                                                width: 10,
                                               ),
                                               Text(snapshot.data[index]["qty"]
                                                   .toString()),
                                               const SizedBox(
-                                                width: 20,
+                                                width: 10,
                                               ),
+                                              IconButton(
+                                                  onPressed: () async {
+                                                    await SQLOps.updateStockQty(
+                                                        snapshot.data[index]
+                                                            ["id"],
+                                                        snapshot.data[index]
+                                                                ["qty"] -
+                                                            1);
+
+                                                    setState(() {
+                                                      _stockList = context
+                                                          .read<
+                                                              PosChangeNotifier>()
+                                                          .getStocks();
+                                                    });
+                                                  },
+                                                  icon:
+                                                      const Icon(Icons.remove)),
                                               ElevatedButton.icon(
-                                                  onPressed: () {},
-                                                  icon: const Icon(Icons.add),
-                                                  label: const Text("")),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      serialController.text =
+                                                          snapshot.data[index]
+                                                                  ["serial"]
+                                                              .toString();
+                                                      _nameController.text =
+                                                          snapshot.data[index]
+                                                                  ["name"]
+                                                              .toString();
+                                                      _categoryController.text =
+                                                          snapshot.data[index]
+                                                                  ["category"]
+                                                              .toString();
+
+                                                      _descController.text =
+                                                          snapshot.data[index]
+                                                                  ["desc"]
+                                                              .toString();
+                                                      _qtyController.text =
+                                                          snapshot.data[index]
+                                                                  ["qty"]
+                                                              .toString();
+
+                                                      _priceController.text =
+                                                          snapshot.data[index]
+                                                                  ["price"]
+                                                              .toString();
+                                                      _costController.text =
+                                                          snapshot.data[index]
+                                                                  ["cost"]
+                                                              .toString();
+                                                      _taxController.text =
+                                                          snapshot.data[index]
+                                                                  ["tax"]
+                                                              .toString();
+                                                    });
+                                                  },
+                                                  icon:
+                                                      const Icon(Icons.update),
+                                                  label: const Text(""))
                                             ])),
                                           ],
                                         ),
@@ -289,11 +394,13 @@ class _AddStocksPageState extends State<AddStocksPage> {
                             }
                             return const CircularProgressIndicator();
                           }),
-                    )),
+                    ),
                   ],
-                )),
-          )
-        ],
+                ),
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
