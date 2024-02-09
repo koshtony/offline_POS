@@ -169,6 +169,26 @@ class SQLOps {
     int sum = result[0]['totalPrice'];
     return sum;
   }
+
+  static Future<int> getStocksQtyTotal() async {
+    final db = await SQLOps._db();
+
+    List<Map> result =
+        await db.rawQuery("select sum(qty) as totalQty from stocks");
+    int total = result[0]['totalQty'];
+
+    return total;
+  }
+
+  static Future<int> getStocksValTotal(col) async {
+    final db = await SQLOps._db();
+
+    List<Map> result =
+        await db.rawQuery("select sum($col*qty) as totalVal from stocks");
+    int total = result[0]['totalVal'];
+
+    return total;
+  }
 }
 
 //

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:offline_pos/components/alert_form.dart';
 import 'package:offline_pos/components/textbox.dart';
 import 'package:offline_pos/database/models.dart';
 import 'package:offline_pos/database/operations.dart';
@@ -79,85 +78,89 @@ class _AddStocksPageState extends State<AddStocksPage> {
             children: [
               Flexible(
                 flex: 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.storefront, size: 50),
-                    const SizedBox(height: 25),
-                    Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            TextBox(
-                                hint: "Serial Number",
-                                controller: serialController,
-                                initial: ""),
-                            const SizedBox(height: 15),
-                            TextBox(
-                              hint: "Name",
-                              controller: _nameController,
-                              initial: "",
-                            ),
-                            const SizedBox(height: 15),
-                            TextBox(
-                                hint: "Category",
-                                controller: _categoryController,
-                                initial: ""),
-                            const SizedBox(height: 15),
-                            TextBox(
-                                hint: "Desc",
-                                controller: _descController,
-                                initial: ""),
-                            const SizedBox(height: 15),
-                            TextBox(
-                              hint: "Qty",
-                              controller: _qtyController,
-                              initial: 1,
-                            ),
-                            const SizedBox(height: 15),
-                            TextBox(
-                              hint: "Cost",
-                              controller: _costController,
-                              initial: 0.0,
-                            ),
-                            const SizedBox(height: 15),
-                            TextBox(
-                              hint: "Price",
-                              controller: _priceController,
-                              initial: 0.0,
-                            ),
-                            const SizedBox(height: 15),
-                            TextBox(
-                                hint: "Tax",
-                                controller: _taxController,
-                                initial: 0.16),
-                            const SizedBox(height: 15),
-                            Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  ElevatedButton.icon(
-                                      onPressed: () async {
-                                        if (_formKey.currentState!.validate()) {
-                                          await saveStocks();
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top,
+                  child: Column(
+                    children: [
+                      const Icon(Icons.storefront, size: 50),
+                      const SizedBox(height: 25),
+                      Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextBox(
+                                  hint: "Serial Number",
+                                  controller: serialController,
+                                  initial: ""),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                hint: "Name",
+                                controller: _nameController,
+                                initial: "",
+                              ),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                  hint: "Category",
+                                  controller: _categoryController,
+                                  initial: ""),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                  hint: "Desc",
+                                  controller: _descController,
+                                  initial: ""),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                hint: "Qty",
+                                controller: _qtyController,
+                                initial: 1,
+                              ),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                hint: "Cost",
+                                controller: _costController,
+                                initial: 0.0,
+                              ),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                hint: "Price",
+                                controller: _priceController,
+                                initial: 0.0,
+                              ),
+                              const SizedBox(height: 15),
+                              TextBox(
+                                  hint: "Tax",
+                                  controller: _taxController,
+                                  initial: 0.16),
+                              const SizedBox(height: 15),
+                              Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    ElevatedButton.icon(
+                                        onPressed: () async {
+                                          if (_formKey.currentState!
+                                              .validate()) {
+                                            await saveStocks();
 
-                                          setState(() {
-                                            _stockList = context
-                                                .read<PosChangeNotifier>()
-                                                .getStocks();
-                                          });
-                                        }
-                                      },
-                                      icon: const Icon(Icons.save),
-                                      label: const Text("save")),
-                                  const SizedBox(width: 20),
-                                  ElevatedButton.icon(
-                                      onPressed: () {},
-                                      icon: const Icon(Icons.update),
-                                      label: const Text("Update"))
-                                ]),
-                          ],
-                        )),
-                  ],
+                                            setState(() {
+                                              _stockList = context
+                                                  .read<PosChangeNotifier>()
+                                                  .getStocks();
+                                            });
+                                          }
+                                        },
+                                        icon: const Icon(Icons.save),
+                                        label: const Text("save")),
+                                    const SizedBox(width: 20),
+                                    ElevatedButton.icon(
+                                        onPressed: () {},
+                                        icon: const Icon(Icons.update),
+                                        label: const Text("Update"))
+                                  ]),
+                            ],
+                          )),
+                    ],
+                  ),
                 ),
               ),
               Flexible(

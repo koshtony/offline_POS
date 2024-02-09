@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: const Color.fromARGB(255, 91, 118, 139)),
+              color: const Color(0xFF2A2D3E)),
           child: renderView(),
         ))
       ]),

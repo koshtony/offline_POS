@@ -48,12 +48,28 @@ class _DashboardPageState extends State<DashboardPage> {
     return await SQLOps.groupByCat();
   }
 
+  Future getIndSales(String query) async {
+    return await SQLOps.getIndDetail("sales", query);
+  }
+
+  Future stocksTotal() async {
+    return SQLOps.getStocksQtyTotal();
+  }
+
+  Future stocksCost() async {
+    return SQLOps.getStocksValTotal("cost");
+  }
+
   Future<dynamic>? _sales;
   late double _qtyTotal = 0.0;
   late double _qtyMonthTotal = 0.0;
   late double _monthRev = 0.0;
   late double _monthProfit = 0.0;
   late List<Map> _stocksCat = [];
+  late double _totalStocks = 0.0;
+  late double _totalCost = 0.0;
+
+  TextEditingController searchTabController = TextEditingController();
 
   @override
   void initState() {
@@ -89,6 +105,24 @@ class _DashboardPageState extends State<DashboardPage> {
         _stocksCat = value;
       });
     });
+
+    stocksTotal().then((value) {
+      setState(() {
+        _totalStocks = value;
+      });
+    });
+
+    stocksCost().then((value) {
+      setState(() {
+        _totalCost = value;
+      });
+    });
+  }
+
+  void filterTable(String query) {
+    setState(() {
+      _sales = getIndSales(query);
+    });
   }
 
   @override
@@ -97,21 +131,25 @@ class _DashboardPageState extends State<DashboardPage> {
       DashList(
           title: "Today sales/Target",
           value: _qtyTotal,
+          percentage: _qtyTotal / _totalStocks,
           icon: const Icon(Icons.calendar_view_day),
           color: Colors.green),
       DashList(
           title: "Monthly sales/Target",
           value: _qtyMonthTotal,
+          percentage: _qtyMonthTotal / _totalStocks,
           icon: const Icon(Icons.calendar_view_month),
           color: Colors.blue),
       DashList(
           title: "Monthly Revenue/Target",
           value: _monthRev,
+          percentage: _monthRev / _totalCost,
           icon: const Icon(Icons.payments),
           color: Colors.yellow),
       DashList(
           title: "Monthly Profit/Target",
           value: _monthProfit,
+          percentage: 0.6,
           icon: const Icon(Icons.money),
           color: Colors.orange)
     ];
@@ -186,7 +224,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                             builder: (context, constraints) =>
                                                 Container(
                                                   width: constraints.maxWidth *
-                                                      0.6,
+                                                          info[index]
+                                                              .percentage ??
+                                                      0.0,
                                                   height: 5,
                                                   decoration: BoxDecoration(
                                                       color: info[index].color,
@@ -226,10 +266,22 @@ class _DashboardPageState extends State<DashboardPage> {
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   )),
+                              TextField(
+                                  controller: searchTabController,
+                                  style: TextStyle(color: Colors.orange),
+                                  onChanged: (value) {
+                                    if (value == "") {
+                                      _sales = getSalesList();
+                                    } else {
+                                      filterTable(value);
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                      labelText: "search",
+                                      prefixIcon: Icon(Icons.search))),
                               FutureBuilder(
                                   future: _sales,
                                   builder: ((context, snapshot) {
-                                    print(snapshot.data.runtimeType);
                                     if (snapshot.data == null) {
                                       const Text("No sales recorded");
                                     } else if (snapshot.hasData) {

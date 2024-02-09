@@ -43,6 +43,8 @@ class _CounterPageState extends State<CounterPage> {
 
   var shoppingCart = ShoppingCart();
 
+  TextEditingController searchController = TextEditingController();
+
   void showAlert(String msg) {
     showDialog(
         context: context,
@@ -66,6 +68,12 @@ class _CounterPageState extends State<CounterPage> {
     _vat = getVat();
   }
 
+  void filterStockList(String query) {
+    setState(() {
+      _stocksList = context.read<PosChangeNotifier>().getIndStocks(query);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<PosChangeNotifier>(context);
@@ -79,7 +87,7 @@ class _CounterPageState extends State<CounterPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
-                flex: 2,
+                flex: 1,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -90,7 +98,15 @@ class _CounterPageState extends State<CounterPage> {
                           fontSize: 16,
                         )),
                     TextField(
-                      controller: TextEditingController(),
+                      controller: searchController,
+                      onChanged: ((value) {
+                        if (value == "") {
+                          _stocksList =
+                              context.read<PosChangeNotifier>().getStocks();
+                        } else {
+                          filterStockList(value.toString());
+                        }
+                      }),
                       decoration: InputDecoration(
                           labelText: "search",
                           prefixIcon: Icon(Icons.search),

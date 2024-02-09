@@ -96,12 +96,14 @@ class Bag {
 class DashList {
   final String title;
   final double value;
+  final double percentage;
   final Icon icon;
   final Color color;
 
   DashList(
       {required this.title,
       required this.value,
+      required this.percentage,
       required this.icon,
       required this.color});
 }
