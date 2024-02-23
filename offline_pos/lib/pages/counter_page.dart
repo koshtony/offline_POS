@@ -1,11 +1,14 @@
-import 'dart:js_interop';
+import 'dart:ffi';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_shopping_cart/flutter_shopping_cart.dart';
 import 'package:offline_pos/database/models.dart';
 import 'package:offline_pos/database/operations.dart';
 import 'package:offline_pos/state_management/pos_change_notifier.dart';
 import 'package:provider/provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class CounterPage extends StatefulWidget {
   const CounterPage({super.key});
@@ -32,14 +35,20 @@ class _CounterPageState extends State<CounterPage> {
   }
 
   Future getVat() async {
-    return await SQLOps.getSum() * 0.16;
+    return await SQLOps.getSum() * 1;
   }
 
   Future<dynamic>? _stocksList;
 
   Future<dynamic>? _total;
 
+  late num _totals = 0;
+
   Future<dynamic>? _vat;
+
+  late num _vats = 0;
+
+  late List<Bag> cartItems = [];
 
   var shoppingCart = ShoppingCart();
 
@@ -66,6 +75,21 @@ class _CounterPageState extends State<CounterPage> {
     context.read<PosChangeNotifier>().getCart();
     _total = getTotal();
     _vat = getVat();
+
+    getCartItems().then((value) {
+      setState(() {
+        cartItems = value;
+      });
+    });
+
+    getTotal().then((value) {
+      setState(() {
+        _totals = value;
+        _vats = value * 0.16;
+
+        //vat = value * 0.16;
+      });
+    });
   }
 
   void filterStockList(String query) {
@@ -133,21 +157,21 @@ class _CounterPageState extends State<CounterPage> {
                                       child: Row(children: [
                                         Text(snapshot.data[index]["id"]
                                             .toString()),
-                                        const SizedBox(width: 40),
+                                        const SizedBox(width: 10),
                                         Text(snapshot.data[index]["name"]),
-                                        const SizedBox(width: 40),
+                                        const SizedBox(width: 10),
                                         Text('${snapshot.data[index]["category"]}' +
                                             ' ' +
                                             '${snapshot.data[index]["desc"]}'),
                                         const SizedBox(
-                                          width: 40,
+                                          width: 20,
                                         ),
                                         Text(
                                             'Ksh ${snapshot.data[index]["price"]}',
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold)),
-                                        const SizedBox(width: 80),
+                                        const SizedBox(width: 20),
                                         ElevatedButton.icon(
                                           onPressed: () async {
                                             final Bag cart = Bag(
@@ -171,7 +195,7 @@ class _CounterPageState extends State<CounterPage> {
                                                     snapshot.data[index]
                                                         ["cost"],
                                                 image: '');
-                                            print(cart);
+
                                             final List<Map<String, dynamic>>
                                                 indDetail =
                                                 await SQLOps.getIndDetail(
@@ -192,6 +216,20 @@ class _CounterPageState extends State<CounterPage> {
                                                       .getPriceTotal();
                                                 },
                                               );
+                                              getCartItems().then((value) {
+                                                setState(() {
+                                                  cartItems = value;
+                                                });
+                                              });
+
+                                              getTotal().then((value) {
+                                                setState(() {
+                                                  _totals = value;
+                                                  _vats = value * 0.16;
+
+                                                  //vat = value * 0.16;
+                                                });
+                                              });
                                             } else {
                                               showAlert(
                                                   "Item already exists in the cart");
@@ -247,8 +285,17 @@ class _CounterPageState extends State<CounterPage> {
                               await SQLOps.addToSales(cart, 'sales');
                               await SQLOps.subtractStock(
                                   item.salesId, item.qty);
-                              showAlert("Saved as sales successfully");
+                              await SQLOps.deleteItem(item.salesId, "cart");
                             }
+
+                            setState(() {
+                              context.read<PosChangeNotifier>().getCart();
+                              _total = context
+                                  .read<PosChangeNotifier>()
+                                  .getPriceTotal();
+                            });
+
+                            showAlert("Saved as sales successfully");
                           },
                           icon: const Icon(Icons.save),
                           label: const Text("Save")),
@@ -256,7 +303,9 @@ class _CounterPageState extends State<CounterPage> {
                         width: 40,
                       ),
                       ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            printReceipt();
+                          },
                           icon: const Icon(Icons.print_sharp),
                           label: const Text("Print"))
                     ]),
@@ -268,6 +317,45 @@ class _CounterPageState extends State<CounterPage> {
                             color: Colors.black26),
                         child: Column(
                           children: [
+                            const Row(
+                              children: [
+                                Text("item",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 60),
+                                Text("price",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 30),
+                                Text("subtotal",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 30),
+                                Text("VAT",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 30),
+                                Text("Total",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 30),
+                                Text("Qty",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 60),
+                                Text("Remove",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                SizedBox(width: 20)
+                              ],
+                            ),
                             Consumer<PosChangeNotifier>(
                                 builder: (context, notifier, child) {
                               if (notifier.cart.isEmpty) {
@@ -282,14 +370,31 @@ class _CounterPageState extends State<CounterPage> {
                                         padding: const EdgeInsets.all(8.0),
                                         child: Row(
                                           children: [
-                                            Text(notifier.cart[index].salesId
-                                                .toString()),
                                             Text(notifier.cart[index].name
                                                 .toString()),
-                                            const SizedBox(width: 40),
-                                            Text(
-                                                'Ksh ${notifier.cart[index].price.toString()}'),
-                                            const SizedBox(width: 40),
+                                            const SizedBox(width: 20),
+                                            Text(notifier.cart[index].price
+                                                .toStringAsFixed(2)),
+                                            const SizedBox(width: 20),
+                                            Text(((notifier.cart[index].price) *
+                                                    (notifier.cart[index].qty))
+                                                .toStringAsFixed(2)),
+                                            const SizedBox(width: 20),
+                                            Text(((notifier.cart[index].price) *
+                                                    (notifier.cart[index].qty) *
+                                                    0.16)
+                                                .toStringAsFixed(2)),
+                                            const SizedBox(width: 10),
+                                            Text(((notifier.cart[index].price *
+                                                        notifier
+                                                            .cart[index].qty *
+                                                        0.16) +
+                                                    (notifier
+                                                            .cart[index].price *
+                                                        notifier
+                                                            .cart[index].qty))
+                                                .toStringAsFixed(2)),
+                                            const SizedBox(width: 10),
                                             IconButton(
                                                 onPressed: () async {
                                                   await SQLOps.updateQty(
@@ -308,15 +413,28 @@ class _CounterPageState extends State<CounterPage> {
                                                             PosChangeNotifier>()
                                                         .getPriceTotal();
                                                   });
+                                                  getCartItems().then((value) {
+                                                    setState(() {
+                                                      cartItems = value;
+                                                    });
+                                                  });
+                                                  getTotal().then((value) {
+                                                    setState(() {
+                                                      _totals = value;
+                                                      _vats = value * 0.16;
+
+                                                      //vat = value * 0.16;
+                                                    });
+                                                  });
                                                 },
                                                 icon: const Icon(Icons.add)),
                                             const SizedBox(
-                                              width: 20,
+                                              width: 10,
                                             ),
                                             Text(notifier.cart[index].qty
                                                 .toString()),
                                             const SizedBox(
-                                              width: 20,
+                                              width: 10,
                                             ),
                                             IconButton(
                                                 onPressed: () async {
@@ -335,9 +453,23 @@ class _CounterPageState extends State<CounterPage> {
                                                             PosChangeNotifier>()
                                                         .getPriceTotal();
                                                   });
+                                                  getCartItems().then((value) {
+                                                    setState(() {
+                                                      cartItems = value;
+                                                    });
+                                                  });
+
+                                                  getTotal().then((value) {
+                                                    setState(() {
+                                                      _totals = value;
+                                                      _vats = value * 0.16;
+
+                                                      //vat = value * 0.16;
+                                                    });
+                                                  });
                                                 },
                                                 icon: const Icon(Icons.remove)),
-                                            const SizedBox(width: 40),
+                                            const SizedBox(width: 10),
                                             IconButton(
                                                 onPressed: () async {
                                                   await SQLOps.deleteItem(
@@ -355,7 +487,21 @@ class _CounterPageState extends State<CounterPage> {
                                                             PosChangeNotifier>()
                                                         .getPriceTotal();
                                                   });
-                                                  print("done");
+
+                                                  getTotal().then((value) {
+                                                    setState(() {
+                                                      _totals = value;
+                                                      _vats = value * 0.16;
+
+                                                      //vat = value * 0.16;
+                                                    });
+                                                  });
+
+                                                  getCartItems().then((value) {
+                                                    setState(() {
+                                                      cartItems = value;
+                                                    });
+                                                  });
                                                 },
                                                 icon: const Icon(Icons.delete)),
                                           ],
@@ -400,7 +546,8 @@ class _CounterPageState extends State<CounterPage> {
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.white,
                                               )),
-                                          Text("Ksh ${snapshot.data * 0.16}",
+                                          Text(
+                                              "Ksh ${(snapshot.data * 0.16).toStringAsFixed(2)}",
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.white,
@@ -423,7 +570,7 @@ class _CounterPageState extends State<CounterPage> {
                                                 color: Colors.white,
                                               )),
                                           Text(
-                                              "Ksh ${snapshot.data * 0.16 + snapshot.data}",
+                                              "Ksh ${(snapshot.data * 0.16 + snapshot.data).toStringAsFixed(2)}",
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.white,
@@ -453,5 +600,88 @@ class _CounterPageState extends State<CounterPage> {
         ),
       ),
     );
+  }
+
+  Future<void> printReceipt() async {
+    final doc = pw.Document(compress: true);
+    final font = await PdfGoogleFonts.nunitoExtraLight();
+    doc.addPage(pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw
+            .Column(mainAxisAlignment: pw.MainAxisAlignment.start, children: [
+          pw.Center(
+              child: pw.Text("Touch & Light", style: pw.TextStyle(font: font))),
+          pw.SizedBox(height: 40),
+          pw.Text("==============", style: pw.TextStyle(font: font)),
+          pw.Row(children: [
+            pw.Text("Name", style: pw.TextStyle(font: font)),
+            pw.SizedBox(width: 20),
+            pw.Text("Qty", style: pw.TextStyle(font: font)),
+            pw.SizedBox(width: 20),
+            pw.Text("Price", style: pw.TextStyle(font: font)),
+            pw.SizedBox(width: 20),
+            pw.Text("Sub Total", style: pw.TextStyle(font: font)),
+            pw.SizedBox(width: 20),
+            pw.Text("VAT", style: pw.TextStyle(font: font)),
+            pw.SizedBox(width: 20),
+            pw.Text("Total", style: pw.TextStyle(font: font)),
+            pw.SizedBox(width: 20),
+          ]),
+          pw.ListView.builder(
+            itemCount: cartItems.length,
+            itemBuilder: (context, index) {
+              return pw.Column(children: [
+                pw.Row(children: [
+                  pw.Text(cartItems[index].name,
+                      style: pw.TextStyle(font: font)),
+                  pw.SizedBox(width: 20),
+                  pw.Text(cartItems[index].qty.toString(),
+                      style: pw.TextStyle(font: font)),
+                  pw.SizedBox(width: 20),
+                  pw.Text(cartItems[index].price.toString(),
+                      style: pw.TextStyle(font: font)),
+                  pw.SizedBox(width: 20),
+                  pw.Text(
+                      (cartItems[index].price * cartItems[index].qty)
+                          .toString(),
+                      style: pw.TextStyle(font: font)),
+                  pw.SizedBox(width: 20),
+                  pw.Text(
+                      (cartItems[index].price * cartItems[index].qty * 0.16)
+                          .toString(),
+                      style: pw.TextStyle(font: font)),
+                  pw.SizedBox(width: 20),
+                  pw.Text(
+                      ((cartItems[index].price * cartItems[index].qty * 0.16) +
+                              (cartItems[index].price * cartItems[index].qty))
+                          .toString(),
+                      style: pw.TextStyle(font: font))
+                ]),
+              ]);
+            },
+          ),
+          pw.SizedBox(height: 40),
+          pw.Text("====", style: pw.TextStyle(font: font)),
+          pw.Row(children: [
+            pw.Text("Sub Total: ", style: pw.TextStyle(font: font)),
+            pw.Text(_totals.toString(), style: pw.TextStyle(font: font))
+          ]),
+          pw.Row(children: [
+            pw.Text("VAT(16%): ", style: pw.TextStyle(font: font)),
+            pw.Text(_vats.toString(), style: pw.TextStyle(font: font))
+          ]),
+          pw.Row(children: [
+            pw.Text("Total: ",
+                style:
+                    pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold)),
+            pw.Text((_vats + _totals).toString(),
+                style: pw.TextStyle(font: font))
+          ])
+        ]);
+      },
+    ));
+    await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => doc.save());
   }
 }

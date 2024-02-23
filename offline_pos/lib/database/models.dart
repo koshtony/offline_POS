@@ -6,7 +6,7 @@ class Stocks {
   final String name;
   final String category;
   final String desc;
-  final double qty;
+  final num qty;
   final double cost;
   final double price;
   final double tax;
@@ -44,7 +44,7 @@ class Bag {
   final String name;
   final String category;
   final String desc;
-  final int qty;
+  final num qty;
   final double price;
   final double tax;
   final double profit;
@@ -95,8 +95,8 @@ class Bag {
 
 class DashList {
   final String title;
-  final double value;
-  final double percentage;
+  final num value;
+  final num percentage;
   final Icon icon;
   final Color color;
 
@@ -106,4 +106,25 @@ class DashList {
       required this.percentage,
       required this.icon,
       required this.color});
+}
+
+class User {
+  final String username;
+  final String password;
+  final String role; //
+
+  User({
+    required this.username,
+    required this.password,
+    required this.role,
+  });
+
+  User.fromMap(Map<dynamic, dynamic> data)
+      : username = data["username"],
+        password = data["password"],
+        role = data["role"];
+
+  Map<String, dynamic> toMap() {
+    return {"username": username, "password": password, "role": role};
+  }
 }

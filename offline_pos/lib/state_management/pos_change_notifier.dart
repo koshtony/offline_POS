@@ -27,7 +27,7 @@ class PosChangeNotifier extends ChangeNotifier {
     return await SQLOps.getIndDetail("stocks", name);
   }
 
-  Future<int> getPriceTotal() async {
+  Future<num> getPriceTotal() async {
     notifyListeners();
     return await SQLOps.getSum();
   }

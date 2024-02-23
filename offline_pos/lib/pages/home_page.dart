@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:offline_pos/database/temporary.dart';
 import 'package:offline_pos/pages/add_stocks_page.dart';
 import 'package:offline_pos/pages/counter_page.dart';
 import 'package:offline_pos/pages/dashboard.dart';
+import 'package:offline_pos/pages/login.dart';
+import 'package:offline_pos/pages/register_user.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +23,8 @@ class _HomePageState extends State<HomePage> {
       return const AddStocksPage();
     } else if (activePage == 'Counter') {
       return const CounterPage();
+    } else if (activePage == 'user') {
+      return const RegisterUser();
     }
   }
 
@@ -29,11 +34,45 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future getValByKey(key) async {
+    return await PrefHelper.getValue(key);
+  }
+
+  String activeUser = '';
+  @override
+  void initState() {
+    super.initState();
+    getValByKey("username").then((value) {
+      setState(() {
+        activeUser = value;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.amberAccent,
+        actions: [
+          ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.person),
+              label: Text(activeUser)),
+          IconButton(
+            onPressed: () async {
+              await PrefHelper.delVal("username");
+              await PrefHelper.delVal("password");
+
+              if (context.mounted) {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const LoginPage()));
+              }
+            },
+            icon: const Icon(Icons.logout, color: Colors.red),
+            tooltip: "Logout",
+          )
+        ],
       ),
       body: Row(children: [
         Container(
@@ -102,7 +141,8 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(
               height: 20,
             ),
-            sideBarList(pageName: "Orders", icon: Icons.shield_sharp)
+            sideBarList(pageName: "user", icon: Icons.face_3_rounded),
+            const SizedBox(height: 20),
           ],
         ))
       ],

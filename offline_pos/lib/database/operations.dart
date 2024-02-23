@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:offline_pos/database/models.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class SQLOps {
   static Future<void> createTables(Database database) async {
@@ -29,13 +27,20 @@ class SQLOps {
 
         );
 
+        CREATE TABLE IF NOT EXISTS users(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT,
+          password TEXT,
+          role TEXT
+        );
+
        """);
   }
 
   static Future<Database> _db() async {
     //WidgetsFlutterBinding.ensureInitialized();
     sqfliteFfiInit();
-    final factory = databaseFactoryFfiWeb;
+    final factory = databaseFactoryFfi;
 
     return factory.openDatabase('pos_db.db',
         options: OpenDatabaseOptions(
@@ -43,6 +48,20 @@ class SQLOps {
             onCreate: (Database database, int version) async {
               await createTables(database);
             }));
+  }
+
+  static Future<int> createUser(User user) async {
+    final db = await SQLOps._db();
+
+    final op = await db.insert("users", user.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+
+    return op;
+  }
+
+  static Future<List<Map<String, dynamic>>> getUser(String name) async {
+    final db = await SQLOps._db();
+    return db.query("users", where: "username=?", whereArgs: [name]);
   }
 
   static Future<int> addDetails(Stocks stock, String table) async {
@@ -91,7 +110,7 @@ class SQLOps {
     return db.query(table, where: "name LIKE ?", whereArgs: ['%$name%']);
   }
 
-  static Future<int> updateQty(int id, int qty) async {
+  static Future<int> updateQty(int id, num qty) async {
     final db = await SQLOps._db();
 
     final newQty = {'qty': qty};
@@ -99,7 +118,7 @@ class SQLOps {
     return db.update('cart', newQty, where: "salesId=?", whereArgs: [id]);
   }
 
-  static Future<int> updateStockQty(int id, int qty) async {
+  static Future<int> updateStockQty(int id, num qty) async {
     final db = await SQLOps._db();
 
     final newQty = {'qty': qty};
@@ -107,11 +126,11 @@ class SQLOps {
     return db.update("stocks", newQty, where: "id=?", whereArgs: [id]);
   }
 
-  static Future<int> subtractStock(int id, int qty) async {
+  static Future<int> subtractStock(int id, num qty) async {
     final db = await SQLOps._db();
     List<Map> results =
         await db.rawQuery("SELECT qty FROM stocks where id=?", [id]);
-    int oldQty = results[0]["qty"];
+    num oldQty = results[0]["qty"];
 
     final newQty = {'qty': oldQty - qty};
 
@@ -161,31 +180,31 @@ class SQLOps {
     return total;
   }
 
-  static Future<int> getSum() async {
+  static Future<num> getSum() async {
     final db = await SQLOps._db();
 
     List<Map> result =
         await db.rawQuery("select sum(price*qty) as totalPrice from cart");
-    int sum = result[0]['totalPrice'];
+    num sum = result[0]['totalPrice'];
     return sum;
   }
 
-  static Future<int> getStocksQtyTotal() async {
+  static Future<num> getStocksQtyTotal() async {
     final db = await SQLOps._db();
 
     List<Map> result =
         await db.rawQuery("select sum(qty) as totalQty from stocks");
-    int total = result[0]['totalQty'];
+    num total = result[0]['totalQty'];
 
     return total;
   }
 
-  static Future<int> getStocksValTotal(col) async {
+  static Future<num> getStocksValTotal(col) async {
     final db = await SQLOps._db();
 
     List<Map> result =
         await db.rawQuery("select sum($col*qty) as totalVal from stocks");
-    int total = result[0]['totalVal'];
+    num total = result[0]['totalVal'];
 
     return total;
   }

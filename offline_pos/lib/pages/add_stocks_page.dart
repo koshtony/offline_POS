@@ -43,6 +43,16 @@ class _AddStocksPageState extends State<AddStocksPage> {
 
   TextEditingController editingController = TextEditingController();
 
+  void retMsg(String msg, Color color) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(msg, style: TextStyle(color: color)),
+          );
+        });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -147,6 +157,9 @@ class _AddStocksPageState extends State<AddStocksPage> {
                                                   .read<PosChangeNotifier>()
                                                   .getStocks();
                                             });
+
+                                            retMsg("saved successfully",
+                                                Colors.green);
                                           }
                                         },
                                         icon: const Icon(Icons.save),

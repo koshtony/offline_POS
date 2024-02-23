@@ -4,13 +4,14 @@ class TextBox extends StatelessWidget {
   final String hint;
   final controller;
   final initial;
+  final bool hidden;
 
-  TextBox({
-    super.key,
-    required this.hint,
-    required this.controller,
-    required this.initial,
-  });
+  TextBox(
+      {super.key,
+      required this.hint,
+      required this.controller,
+      required this.initial,
+      this.hidden = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +19,7 @@ class TextBox extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: TextFormField(
           controller: controller,
+          obscureText: hidden,
           decoration: InputDecoration(
             enabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: Colors.white),
