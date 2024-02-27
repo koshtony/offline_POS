@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:offline_pos/database/operations.dart';
 import 'package:offline_pos/pages/add_stocks_page.dart';
+import 'package:offline_pos/pages/dashboard.dart';
 import 'package:offline_pos/pages/home_page.dart';
 import 'package:offline_pos/pages/login.dart';
 import 'package:offline_pos/state_management/pos_change_notifier.dart';
 import 'package:flutter_shopping_cart/flutter_shopping_cart.dart';
 import 'package:provider/provider.dart';
 
+final SQLOps sqlops = SQLOps();
 void main() async {
+  await sqlops.initDB();
   await ShoppingCart().init();
   runApp(
     ChangeNotifierProvider(

@@ -18,7 +18,7 @@ class _RegisterUserState extends State<RegisterUser> {
   bool hidden = true;
   String roleValue = "normal";
   var items = ["admin", "normal"];
-
+  final SQLOps sqlops = SQLOps();
   void dispMsg(String msg, Color color) {
     showDialog(
         context: context,
@@ -30,7 +30,7 @@ class _RegisterUserState extends State<RegisterUser> {
   }
 
   Future<List<Map<String, dynamic>>> getAllUsers() async {
-    return SQLOps.getDetails("users");
+    return sqlops.getDetails("users");
   }
 
   Future<dynamic>? _usersList;
@@ -129,7 +129,7 @@ class _RegisterUserState extends State<RegisterUser> {
                               ElevatedButton.icon(
                                   onPressed: () async {
                                     final List<Map<String, dynamic>>
-                                        checkUsername = await SQLOps.getUser(
+                                        checkUsername = await sqlops.getUser(
                                             _usernameController.text
                                                 .toString());
                                     final User user = User(
@@ -145,7 +145,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                         dispMsg(
                                             "User already exists", Colors.red);
                                       } else {
-                                        await SQLOps.createUser(user);
+                                        await sqlops.createUser(user);
                                         dispMsg("user created successfully",
                                             Colors.green);
                                       }

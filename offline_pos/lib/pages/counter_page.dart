@@ -17,25 +17,27 @@ class CounterPage extends StatefulWidget {
   State<CounterPage> createState() => _CounterPageState();
 }
 
+final SQLOps sqlops = SQLOps();
+
 class _CounterPageState extends State<CounterPage> {
   Future getStocks() async {
-    return await SQLOps.getDetails('stocks');
+    return await sqlops.getDetails('stocks');
   }
 
   Future getIndStocks(id) async {
-    return await SQLOps.getIndDetail("stocks", id);
+    return await sqlops.getIndDetail("stocks", id);
   }
 
   Future getTotal() async {
-    return await SQLOps.getSum();
+    return await sqlops.getSum() ?? 0;
   }
 
   Future<List<Bag>> getCartItems() async {
-    return await SQLOps.getBagList();
+    return await sqlops.getBagList();
   }
 
   Future getVat() async {
-    return await SQLOps.getSum() * 1;
+    return await sqlops.getSum() ?? 0 * 1;
   }
 
   Future<dynamic>? _stocksList;
@@ -198,13 +200,13 @@ class _CounterPageState extends State<CounterPage> {
 
                                             final List<Map<String, dynamic>>
                                                 indDetail =
-                                                await SQLOps.getIndDetail(
+                                                await sqlops.getIndDetail(
                                                     'cart',
                                                     snapshot.data[index]
                                                         ["name"]);
                                             print(indDetail);
                                             if (indDetail.isEmpty) {
-                                              await SQLOps.addToCart(
+                                              await sqlops.addToCart(
                                                   cart, 'cart');
                                               setState(
                                                 () {
@@ -282,10 +284,10 @@ class _CounterPageState extends State<CounterPage> {
                                 image: '',
                               );
 
-                              await SQLOps.addToSales(cart, 'sales');
-                              await SQLOps.subtractStock(
+                              await sqlops.addToSales(cart, 'sales');
+                              await sqlops.subtractStock(
                                   item.salesId, item.qty);
-                              await SQLOps.deleteItem(item.salesId, "cart");
+                              await sqlops.deleteItem(item.salesId, "cart");
                             }
 
                             setState(() {
@@ -397,7 +399,7 @@ class _CounterPageState extends State<CounterPage> {
                                             const SizedBox(width: 10),
                                             IconButton(
                                                 onPressed: () async {
-                                                  await SQLOps.updateQty(
+                                                  await sqlops.updateQty(
                                                       notifier
                                                           .cart[index].salesId,
                                                       notifier.cart[index].qty +
@@ -438,7 +440,7 @@ class _CounterPageState extends State<CounterPage> {
                                             ),
                                             IconButton(
                                                 onPressed: () async {
-                                                  await SQLOps.updateQty(
+                                                  await sqlops.updateQty(
                                                       notifier
                                                           .cart[index].salesId,
                                                       notifier.cart[index].qty -
@@ -472,7 +474,7 @@ class _CounterPageState extends State<CounterPage> {
                                             const SizedBox(width: 10),
                                             IconButton(
                                                 onPressed: () async {
-                                                  await SQLOps.deleteItem(
+                                                  await sqlops.deleteItem(
                                                       notifier
                                                           .cart[index].salesId,
                                                       "cart");

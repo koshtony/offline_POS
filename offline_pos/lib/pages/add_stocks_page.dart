@@ -23,7 +23,7 @@ class _AddStocksPageState extends State<AddStocksPage> {
   final _costController = TextEditingController();
   final _priceController = TextEditingController();
   final _taxController = TextEditingController();
-
+  final SQLOps sqlops = SQLOps();
   Future<void> saveStocks() async {
     final Stocks stock = Stocks(
         serial: serialController.text,
@@ -36,7 +36,7 @@ class _AddStocksPageState extends State<AddStocksPage> {
         tax: double.parse(_taxController.text),
         image: '');
 
-    await SQLOps.addDetails(stock, 'stocks');
+    await sqlops.addDetails(stock, 'stocks');
   }
 
   Future<dynamic>? _stockList;
@@ -316,7 +316,7 @@ class _AddStocksPageState extends State<AddStocksPage> {
                                                 child: Wrap(children: [
                                               IconButton(
                                                   onPressed: () async {
-                                                    await SQLOps.updateStockQty(
+                                                    await sqlops.updateStockQty(
                                                         snapshot.data[index]
                                                             ["id"],
                                                         snapshot.data[index]
@@ -341,7 +341,7 @@ class _AddStocksPageState extends State<AddStocksPage> {
                                               ),
                                               IconButton(
                                                   onPressed: () async {
-                                                    await SQLOps.updateStockQty(
+                                                    await sqlops.updateStockQty(
                                                         snapshot.data[index]
                                                             ["id"],
                                                         snapshot.data[index]

@@ -15,53 +15,79 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   DateFormat dateFormat = DateFormat("yyyy-MM-dd");
   DateFormat dateMonthFormat = DateFormat("MM");
-
+  final SQLOps sqlops = SQLOps();
   Future getQtyTotal() async {
     String date1 = dateFormat.format(DateTime.now());
     String date2 = dateFormat.format(DateTime.now());
 
-    return await SQLOps.getTotals("qty", date1, date2);
+    return await sqlops.getTotals("qty", date1, date2);
   }
 
   Future getMonthTotal() async {
     String date1 = dateMonthFormat.format(DateTime.now());
 
-    return await SQLOps.getMonthTotals("qty", date1);
+    return await sqlops.getMonthTotals("qty", date1);
   }
 
   Future getMonthRev() async {
     String date1 = dateMonthFormat.format(DateTime.now());
 
-    return await SQLOps.getMonthTotals("price", date1);
+    return await sqlops.getMonthTotals("price", date1);
   }
 
   Future getMonthProfit() async {
     String date1 = dateMonthFormat.format(DateTime.now());
 
-    return await SQLOps.getMonthTotals("profit", date1);
+    return await sqlops.getMonthTotals("profit", date1);
   }
 
   Future getSalesList() async {
-    return await SQLOps.getDetails('sales');
+    return await sqlops.getDetails('sales');
   }
 
   Future getStocksCat() async {
-    return await SQLOps.groupByCat();
+    return await sqlops.groupByCat();
   }
 
   Future getIndSales(String query) async {
-    return await SQLOps.getIndDetail("sales", query);
+    return await sqlops.getIndDetail("sales", query);
   }
 
   Future stocksTotal() async {
-    return SQLOps.getStocksQtyTotal();
+    return sqlops.getStocksQtyTotal();
   }
 
   Future stocksCost() async {
-    return SQLOps.getStocksValTotal("cost");
+    return sqlops.getStocksValTotal("cost");
+  }
+
+  Future summary() async {
+    String date1 = dateMonthFormat.format(DateTime.now());
+    return await sqlops.getSummary(date1);
+  }
+
+  Future summaryToday() async {
+    String date1 = dateFormat.format(DateTime.now());
+
+    return await sqlops.getSummary(date1);
+  }
+
+  Future summaryDate(query) async {
+    return await sqlops.getDateSummary(query) ?? [];
+  }
+
+  Future filterSalesByDate(date) async {
+    return await sqlops.getDateDetails("sales", date);
+  }
+
+  Future filterStocksCat(query) async {
+    return await sqlops.groupFilterByCat(query);
   }
 
   Future<dynamic>? _sales;
+  Future<dynamic>? _summary;
+
+  List labels = ["qty", "price", "revenue", "tax"];
 
   late List<Map> _stocksCat = [];
 
@@ -72,11 +98,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
   TextEditingController searchTabController = TextEditingController();
   TextEditingController catController = TextEditingController();
+  TextEditingController summaryController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _sales = getSalesList();
+
+    _summary = summary();
 
     getQtyTotal().then((value) {
       setState(() {
@@ -111,7 +140,19 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void filterTable(String query) {
     setState(() {
-      _sales = getIndSales(query);
+      _sales = filterSalesByDate(query);
+    });
+  }
+
+  void filterSummary(String query) {
+    setState(() {
+      _summary = summaryDate(query);
+    });
+  }
+
+  void getTodaySales() {
+    setState(() {
+      _summary = summaryToday();
     });
   }
 
@@ -119,25 +160,25 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     List<DashList> dash = [
       DashList(
-          title: "Today sales/Target",
+          title: "Monthly sales/Target",
           value: qtyTotal ?? 0.0,
           percentage: 0.2,
           icon: const Icon(Icons.calendar_view_day),
           color: Colors.green),
       DashList(
-          title: "Monthly sales/Target",
+          title: "Monthly Revenue/Target",
           value: monthTotal ?? 0.0,
           percentage: 0.5,
           icon: const Icon(Icons.calendar_view_month),
           color: Colors.blue),
       DashList(
-          title: "Monthly Revenue/Target",
+          title: "Monthly Profit/Target",
           value: monthRev ?? 0.0,
           percentage: 0.75,
           icon: const Icon(Icons.payments),
           color: Colors.yellow),
       DashList(
-          title: "Monthly Profit/Target",
+          title: "Monthly Tax/Target",
           value: monthProfit ?? 0.0,
           percentage: 0.6,
           icon: const Icon(Icons.money),
@@ -156,92 +197,127 @@ class _DashboardPageState extends State<DashboardPage> {
                       flex: 5,
                       child: Column(
                         children: [
+                          TextField(
+                              controller: summaryController,
+                              style: TextStyle(color: Colors.orange),
+                              onChanged: (value) {
+                                if (value == "") {
+                                  _summary = summary();
+                                } else {
+                                  filterSummary(value);
+                                }
+                              },
+                              decoration: const InputDecoration(
+                                  labelText: "Tue, Feb 27, 2024",
+                                  prefixIcon: Icon(Icons.search))),
                           const SizedBox(height: 16),
-                          GridView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: dash.length,
-                              shrinkWrap: true,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
-                                crossAxisSpacing: 8,
-                              ),
-                              itemBuilder: ((context, index) {
-                                return Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: const BoxDecoration(
-                                      color: Color(0xFF212332),
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(20))),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              height: 40,
-                                              width: 40,
-                                              decoration: BoxDecoration(
-                                                color: dash[index].color,
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(20)),
-                                              ),
-                                              child: dash[index].icon,
-                                            )
-                                          ]),
-                                      Text(dash[index].title,
-                                          maxLines: 1,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          )),
-                                      const SizedBox(height: 20),
-                                      Stack(children: [
-                                        Container(
-                                          width: double.infinity,
-                                          height: 5,
-                                          decoration: BoxDecoration(
-                                              color: dash[index]
-                                                  .color
-                                                  .withOpacity(0.2),
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(16))),
-                                        ),
-                                        LayoutBuilder(
-                                            builder: (context, constraints) =>
+                          FutureBuilder(
+                              future: _summary,
+                              builder: (context, snapshot) {
+                                if (snapshot.data == null) {
+                                  const Text("no data");
+                                } else if (snapshot.hasData) {
+                                  return GridView.builder(
+                                      padding: const EdgeInsets.all(16),
+                                      itemCount: snapshot.data?.length ?? 0,
+                                      shrinkWrap: true,
+                                      gridDelegate:
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 4,
+                                        crossAxisSpacing: 8,
+                                      ),
+                                      itemBuilder: ((context, index) {
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: const BoxDecoration(
+                                              color: Color(0xFF212332),
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(20))),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      height: 40,
+                                                      width: 40,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            dash[index].color,
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .all(
+                                                                Radius.circular(
+                                                                    20)),
+                                                      ),
+                                                      child: dash[index].icon,
+                                                    )
+                                                  ]),
+                                              Text(dash[index].title,
+                                                  maxLines: 1,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                  )),
+                                              const SizedBox(height: 20),
+                                              Stack(children: [
                                                 Container(
-                                                  width: constraints.maxWidth *
-                                                      0.5,
+                                                  width: double.infinity,
                                                   height: 5,
                                                   decoration: BoxDecoration(
-                                                      color: dash[index].color,
+                                                      color: dash[index]
+                                                          .color
+                                                          .withOpacity(0.2),
                                                       borderRadius:
                                                           const BorderRadius
                                                               .all(
                                                               Radius.circular(
                                                                   16))),
-                                                ))
-                                      ]),
-                                      const SizedBox(height: 20),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(dash[index].value.toString(),
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                              ))
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                );
-                              })),
+                                                ),
+                                                LayoutBuilder(
+                                                    builder: (context,
+                                                            constraints) =>
+                                                        Container(
+                                                          width: constraints
+                                                                  .maxWidth *
+                                                              0.5,
+                                                          height: 5,
+                                                          decoration: BoxDecoration(
+                                                              color: dash[index]
+                                                                  .color,
+                                                              borderRadius:
+                                                                  const BorderRadius
+                                                                      .all(
+                                                                      Radius.circular(
+                                                                          16))),
+                                                        ))
+                                              ]),
+                                              const SizedBox(height: 20),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                      snapshot.data[index]
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                      ))
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      }));
+                                } else if (snapshot.hasError) {
+                                  return const Text("Data cannot be loaded");
+                                }
+                                return const CircularProgressIndicator();
+                              }),
                           const SizedBox(height: 20),
                           Container(
                               padding: const EdgeInsets.all(16),
@@ -253,12 +329,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                 child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text("Monthly sales",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          )),
+                                      Row(children: [
+                                        const Text("Monthly sales",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            )),
+                                      ]),
                                       TextField(
                                           controller: searchTabController,
                                           style:
@@ -434,6 +512,27 @@ class _DashboardPageState extends State<DashboardPage> {
                             Flexible(
                                 child: Column(
                               children: [
+                                TextField(
+                                    controller: catController,
+                                    style: TextStyle(color: Colors.orange),
+                                    onChanged: (value) {
+                                      if (value == "") {
+                                        getStocksCat().then((values) {
+                                          setState(() {
+                                            _stocksCat = values;
+                                          });
+                                        });
+                                      } else {
+                                        filterStocksCat(value).then((values) {
+                                          setState(() {
+                                            _stocksCat = values;
+                                          });
+                                        });
+                                      }
+                                    },
+                                    decoration: const InputDecoration(
+                                        labelText: "search",
+                                        prefixIcon: Icon(Icons.search))),
                                 Expanded(
                                   child: ListView.builder(
                                       itemCount: _stocksCat.length,

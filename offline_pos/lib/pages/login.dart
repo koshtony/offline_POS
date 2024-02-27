@@ -15,7 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKeys = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
+  final SQLOps sqlops = SQLOps();
   void retMsg(String msg, Color color) {
     showDialog(
         context: context,
@@ -35,12 +35,12 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     getValByKey("username").then((value) {
       setState(() {
-        usernameController.text = value;
+        usernameController.text = value ?? '';
       });
     });
     getValByKey("password").then((value) {
       setState(() {
-        passwordController.text = value;
+        passwordController.text = value ?? '';
       });
     });
   }
@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () async {
                             if (_formKeys.currentState!.validate()) {
                               final List<Map<String, dynamic>> getUsername =
-                                  await SQLOps.getUser(usernameController.text);
+                                  await sqlops.getUser(usernameController.text);
                               if (getUsername.isNotEmpty == true &&
                                   getUsername[0]["password"] ==
                                       passwordController.text) {
